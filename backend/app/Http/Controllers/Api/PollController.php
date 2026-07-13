@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePollRequest;
 use App\Models\Poll;
+use App\Models\Vote;
 use Illuminate\Http\Request;
 
 class PollController extends Controller
@@ -33,5 +34,44 @@ class PollController extends Controller
     public function show(Poll $poll)
     {
         return $poll->load('options', 'user:id,name')->loadCount('votes');
+    }
+
+    public function update(StorePollRequest $request, Poll $poll)
+    {
+        $this->authorize('update', $poll);
+
+        $poll->update($request->only('title', 'description', 'expires_at'));
+
+        return response()->json($poll->load('options'));
+    }
+
+    public function destroy(Poll $poll)
+    {
+        $this->authorize('delete', $poll);
+
+        $poll->delete();
+
+        return response()->json(['message' => 'Enquete excluída']);
+    }
+
+    public function vote(Request $request, Poll $poll)
+    {
+        $request->validate(['option_id' => ['required', 'exists:options,id']]);
+
+        $ja_votou = Vote::where('user_id', $request->user()->id)
+            ->where('poll_id', $poll->id)
+            ->exists();
+
+        if ($ja_votou) {
+            return response()->json(['message' => 'Você já votou nesta enquete'], 422);
+        }
+
+        Vote::create([
+            'user_id' => $request->user()->id,
+            'poll_id' => $poll->id,
+            'option_id' => $request->option_id,
+        ]);
+
+        return response()->json(['message' => 'Voto registrado']);
     }
 }
