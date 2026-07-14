@@ -15,6 +15,7 @@ Route::get('/me', function (Illuminate\Http\Request $request) {
     return $request->user();
 });
 
+Route::get('/my-votes', [PollController::class, 'myVotes']);
 Route::get('/polls', [PollController::class, 'index']);
 Route::get('/polls/{poll}', [PollController::class, 'show']);
 Route::post('/polls', [PollController::class, 'store']);

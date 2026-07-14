@@ -62,6 +62,16 @@ export default function PollDetail() {
 
         <p className="text-sm text-gray-400 mt-2">por {poll.user?.name}</p>
 
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(window.location.href)
+            alert('Link copiado!')
+          }}
+          className="text-brand text-sm font-medium mt-2"
+        >
+          🔗 Compartilhar
+        </button>
+
         {error && <p className="text-accent text-sm mt-4">{error}</p>}
 
         <div className="mt-6">

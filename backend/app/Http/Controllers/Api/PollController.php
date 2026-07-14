@@ -75,6 +75,19 @@ class PollController extends Controller
         return response()->json(['message' => 'Voto registrado']);
     }
 
+    public function myVotes(Request $request)
+    {
+        return Vote::where('user_id', $request->user()->id)
+            ->with('poll:id,title')
+            ->latest()
+            ->get()
+            ->map(fn ($v) => [
+                'poll_id' => $v->poll_id,
+                'poll_title' => $v->poll?->title,
+                'voted_at' => $v->created_at,
+            ]);
+    }
+
     public function stream(Poll $poll)
     {
         return response()->stream(function () use ($poll) {

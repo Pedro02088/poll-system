@@ -16,6 +16,7 @@ export default function Layout({ children }) {
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link to="/" className="text-xl font-bold">Enquetes</Link>
           <div className="flex items-center gap-4">
+            <Link to="/my-votes" className="text-sm hover:underline">Meus votos</Link>
             <span className="text-sm">Olá, {user?.name}</span>
             <button onClick={handleLogout} className="text-sm bg-white/20 px-3 py-1 rounded hover:bg-white/30">
               Sair
