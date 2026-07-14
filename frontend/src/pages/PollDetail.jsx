@@ -5,6 +5,7 @@ import { useSSE } from '../hooks/useSSE'
 import { useAuth } from '../context/AuthContext'
 import Layout from '../components/Layout'
 import ResultBar from '../components/ResultBar'
+import ResultChart from '../components/ResultChart'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
@@ -91,6 +92,11 @@ export default function PollDetail() {
               {results.map((opt) => (
                 <ResultBar key={opt.id} text={opt.text} votes={opt.votes} total={total} />
               ))}
+              {total > 0 && (
+                <div className="max-w-xs mx-auto my-6">
+                  <ResultChart results={results} />
+                </div>
+              )}
               <p className="text-xs text-gray-400 mt-3">Total: {total} voto(s) · atualiza automaticamente</p>
             </>
           )}
