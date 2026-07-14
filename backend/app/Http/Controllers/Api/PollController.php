@@ -105,7 +105,7 @@ class PollController extends Controller
                     'votes' => $o->votes_count,
                 ]);
 
-            echo 'retry: 2000' . "\n";
+            echo 'retry: 1000' . "\n";
             echo 'data: ' . json_encode($resultados) . "\n\n";
 
             if (ob_get_level() > 0) {

@@ -17,7 +17,9 @@ export default function PollDetail() {
   const [voted, setVoted] = useState(false)
   const [error, setError] = useState('')
 
-  const liveResults = useSSE(`${API}/polls/${id}/stream`)
+  // Só conecta o stream de resultados depois do voto — durante a votação o
+  // EventSource não precisa competir com o clique pelo processo do servidor.
+  const liveResults = useSSE(voted ? `${API}/polls/${id}/stream` : null)
 
   useEffect(() => {
     pollService.get(id).then((res) => setPoll(res.data))
