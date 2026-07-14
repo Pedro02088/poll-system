@@ -20,5 +20,6 @@ Route::get('/polls/{poll}', [PollController::class, 'show']);
 Route::post('/polls', [PollController::class, 'store']);
 Route::put('/polls/{poll}', [PollController::class, 'update']);
 Route::delete('/polls/{poll}', [PollController::class, 'destroy']);
-Route::post('/polls/{poll}/vote', [PollController::class, 'vote']);
+Route::post('/polls/{poll}/vote', [PollController::class, 'vote'])
+    ->middleware('throttle:10,1');
 Route::get('/polls/{poll}/stream', [PollController::class, 'stream']);
