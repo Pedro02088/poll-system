@@ -72,6 +72,11 @@ class PollController extends Controller
             'option_id' => $request->option_id,
         ]);
 
+        $poll->load('user');
+
+        $request->user()->notify(new \App\Notifications\VoteConfirmation($poll->title));
+        $poll->user->notify((new \App\Notifications\NewVoteReceived($poll->title))->delay(now()->addSeconds(3)));
+
         return response()->json(['message' => 'Voto registrado']);
     }
 

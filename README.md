@@ -23,7 +23,7 @@ de responsabilidades e boas práticas.
 - React Router
 - Axios
 - Tailwind CSS
-- Chart.js (gráficos de resultado)
+- Chart.js (gráfico de resultado)
 
 ---
 
@@ -38,12 +38,14 @@ de responsabilidades e boas práticas.
 - Resultados em **tempo real** via SSE (atualizam sozinhos em todas as telas)
 
 ### Diferenciais implementados
-- Barra de progresso e gráfico de rosca (Chart.js) nos resultados
+- Barras de resultado animadas + gráfico de rosca (Chart.js), com destaque para a opção líder
 - Busca de enquetes e ordenação por mais votadas
 - Rate limiting nos votos
 - Validação forte de e-mail (formato + DNS)
 - Compartilhamento de enquete por link
 - Histórico de votos do usuário
+- Recuperação de senha por e-mail (token com expiração, fluxo nativo do Laravel)
+- Notificações por e-mail (confirmação de voto ao votante + aviso ao dono da enquete), enviadas via fila
 
 ---
 
@@ -93,6 +95,20 @@ Crie o banco antes de migrar:
 CREATE DATABASE enquetes;
 ```
 
+Para as notificações por e-mail (voto confirmado, aviso ao dono e recuperação de
+senha) funcionarem, configure um provedor SMTP de teste — recomendamos o
+[Mailtrap](https://mailtrap.io) (sandbox gratuito). Preencha as variáveis
+`MAIL_*` no `backend/.env` com as credenciais da sua caixa sandbox.
+
+As notificações de voto são **enfileiradas** (não bloqueiam a resposta do
+voto). Rode o worker em um terceiro terminal, junto com os dois servidores:
+```bash
+cd backend
+php artisan queue:work
+```
+Sem o worker rodando, os votos continuam funcionando normalmente — só os
+e-mails ficam pendentes na tabela `jobs` até o worker processá-los.
+
 ### 3. Front-end
 ```bash
 cd frontend
@@ -116,6 +132,17 @@ DB_PASSWORD=sua_senha
 SESSION_DRIVER=database
 SESSION_DOMAIN=localhost
 SANCTUM_STATEFUL_DOMAINS=localhost:5173
+FRONTEND_URL=http://localhost:5173
+
+QUEUE_CONNECTION=database
+
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=seu_usuario_mailtrap
+MAIL_PASSWORD=sua_senha_mailtrap
+MAIL_FROM_ADDRESS="nao-responda@enlace.com"
+MAIL_FROM_NAME="Enlace"
 ```
 
 **frontend/.env**
@@ -132,6 +159,8 @@ VITE_API_URL=http://localhost:8000/api
 | POST | `/api/register` | Cadastro | Não |
 | POST | `/api/login` | Login | Não |
 | POST | `/api/logout` | Logout | Sim |
+| POST | `/api/forgot-password` | Envia link de recuperação por e-mail | Não |
+| POST | `/api/reset-password` | Redefine a senha (com token do e-mail) | Não |
 | GET | `/api/me` | Usuário logado | Sim |
 | GET | `/api/polls` | Lista enquetes | Não |
 | POST | `/api/polls` | Cria enquete | Sim |
@@ -194,8 +223,6 @@ Todas as chaves estrangeiras usam `ON DELETE CASCADE`. O diagrama está em
 
 ## Possíveis melhorias
 
-- Notificações por e-mail (confirmação de voto, aviso ao dono)
-- Recuperação de senha
 - Enquetes anônimas
 - Paginação na listagem
 - Testes automatizados (PHPUnit / Vitest)
