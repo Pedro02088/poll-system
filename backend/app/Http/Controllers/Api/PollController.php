@@ -78,29 +78,22 @@ class PollController extends Controller
     public function stream(Poll $poll)
     {
         return response()->stream(function () use ($poll) {
-            while (true) {
-                $resultados = $poll->options()
-                    ->withCount('votes')
-                    ->get(['id', 'text'])
-                    ->map(fn ($o) => [
-                        'id' => $o->id,
-                        'text' => $o->text,
-                        'votes' => $o->votes_count,
-                    ]);
+            $resultados = $poll->options()
+                ->withCount('votes')
+                ->get(['id', 'text'])
+                ->map(fn ($o) => [
+                    'id' => $o->id,
+                    'text' => $o->text,
+                    'votes' => $o->votes_count,
+                ]);
 
-                echo 'data: ' . json_encode($resultados) . "\n\n";
+            echo 'retry: 2000' . "\n";
+            echo 'data: ' . json_encode($resultados) . "\n\n";
 
-                if (ob_get_level() > 0) {
-                    ob_flush();
-                }
-                flush();
-
-                if (connection_aborted()) {
-                    break;
-                }
-
-                sleep(2);
+            if (ob_get_level() > 0) {
+                ob_flush();
             }
+            flush();
         }, 200, [
             'Content-Type' => 'text/event-stream',
             'Cache-Control' => 'no-cache',
