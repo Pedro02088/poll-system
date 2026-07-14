@@ -3,10 +3,8 @@ import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
 import Register from './pages/Register'
-
-function Home() {
-  return <div className="p-8 text-2xl font-bold text-brand">Enquetes (em breve)</div>
-}
+import PollList from './pages/PollList'
+import PollCreate from './pages/PollCreate'
 
 export default function App() {
   return (
@@ -15,7 +13,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute><PollList /></ProtectedRoute>} />
+          <Route path="/polls/new" element={<ProtectedRoute><PollCreate /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
