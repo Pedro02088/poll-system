@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 28px 24px; background: #ffffff; font-family: Inter, system-ui, sans-serif; }
+  h1 { font-size: 20px; color: #0f172a; margin: 0 0 4px; text-align: center; }
+  p.sub { font-size: 12px; color: #64748b; margin: 0 0 20px; text-align: center; }
+  .note { font-size: 11px; color: #64748b; margin-top: 18px; text-align: center; line-height: 1.7; }
+  .note code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; color: #2563eb; }
+</style>
+</head>
+<body>
+<h1>Enlace — Diagrama do Banco de Dados</h1>
+<p class="sub">Sistema de Enquetes · MySQL</p>
+<pre class="mermaid">
+erDiagram
+    users ||--o{ polls : "cria"
+    users ||--o{ votes : "vota (logado)"
+    users ||--o{ sessions : "autentica"
+    polls ||--|{ options : "possui 2 a 8"
+    polls ||--o{ votes : "recebe"
+    options ||--o{ votes : "escolhida em"
+
+    users {
+        bigint id PK
+        varchar name
+        varchar email UK "unico"
+        timestamp email_verified_at "nullable"
+        varchar password "hash bcrypt"
+        varchar remember_token "nullable"
+        timestamps created_updated
+    }
+    password_reset_tokens {
+        varchar email PK
+        varchar token "hash do token do e-mail"
+        timestamp created_at "expira em 60 min"
+    }
+    sessions {
+        varchar id PK
+        bigint user_id FK "nullable"
+        varchar ip_address
+        text user_agent
+        longtext payload
+        int last_activity
+    }
+    polls {
+        bigint id PK
+        bigint user_id FK "dono"
+        varchar title
+        text description "nullable"
+        boolean is_anonymous "permite voto sem login"
+        timestamp expires_at "nullable - bloqueia voto apos a data"
+        timestamps created_updated
+    }
+    options {
+        bigint id PK
+        bigint poll_id FK
+        varchar text
+        timestamps created_updated
+    }
+    votes {
+        bigint id PK
+        bigint user_id FK "nullable - null quando anonimo"
+        varchar voter_token "nullable - identifica visitante"
+        bigint poll_id FK
+        bigint option_id FK
+        timestamps created_updated
+    }
+    jobs {
+        bigint id PK
+        varchar queue "fila dos e-mails"
+        longtext payload
+        smallint attempts
+        int available_at
+    }
+</pre>
+<p class="note">
+  Todas as FKs usam <code>ON DELETE CASCADE</code>.
+  Voto único garantido no banco por duas uniques em <b>votes</b>:
+  <code>unique(user_id, poll_id)</code> para usuário logado e
+  <code>unique(voter_token, poll_id)</code> para visitante anônimo.<br>
+  Como o MySQL permite múltiplos NULLs numa unique, os dois cenários convivem na mesma tabela.
+  <b>password_reset_tokens</b> e <b>jobs</b> não têm FK: são tabelas de apoio (recuperação de senha e fila de e-mails).
+</p>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs'
+  mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: {
+    primaryColor: '#eff6ff', primaryBorderColor: '#2563eb', primaryTextColor: '#0f172a',
+    lineColor: '#94a3b8', fontFamily: 'Inter, system-ui, sans-serif', fontSize: '13px'
+  }})
+  await mermaid.run()
+  window.__ready = true
+</script>
+</body>
+</html>

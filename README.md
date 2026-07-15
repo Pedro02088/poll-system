@@ -178,16 +178,33 @@ Uma collection do Postman com todas as rotas está em `/docs/poll-system.postman
 
 ## Banco de dados
 
-Cinco tabelas principais:
-
 - **users** — usuários (nome, e-mail único, senha com hash)
-- **polls** — enquetes (pertencem a um usuário)
+- **polls** — enquetes (dono, título, descrição, `is_anonymous`, `expires_at`)
 - **options** — opções de resposta (pertencem a uma enquete, 2 a 8)
-- **votes** — votos (usuário + enquete + opção, com restrição única em user_id+poll_id)
+- **votes** — votos (enquete + opção, mais `user_id` **ou** `voter_token`)
 - **sessions** — sessões de autenticação (gerenciada pelo Laravel)
+- **password_reset_tokens** — tokens de recuperação de senha (expiram em 60 min)
+- **jobs** — fila das notificações por e-mail
 
-Todas as chaves estrangeiras usam `ON DELETE CASCADE`. O diagrama está em
-`/docs/diagrama-banco.png`.
+Todas as chaves estrangeiras usam `ON DELETE CASCADE`.
+
+### Voto único
+
+A regra de um voto por pessoa é garantida **no banco**, por duas restrições
+únicas em `votes`:
+
+| Cenário | Restrição | `user_id` | `voter_token` |
+|---------|-----------|-----------|---------------|
+| Usuário logado | `unique(user_id, poll_id)` | preenchido | `null` |
+| Visitante (enquete anônima) | `unique(voter_token, poll_id)` | `null` | UUID do navegador |
+
+Como o MySQL permite múltiplos `NULL` numa restrição única, os dois cenários
+convivem na mesma tabela sem que uma regra invalide a outra.
+
+![Diagrama do banco de dados](docs/diagrama-banco.png)
+
+> O diagrama é gerado a partir de `docs/diagrama-banco.html` (Mermaid) — edite o
+> HTML e recapture a imagem para mantê-lo em dia com o schema.
 
 ---
 
