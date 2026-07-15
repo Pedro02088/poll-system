@@ -1,0 +1,280 @@
+{
+  "info": {
+    "name": "Enlace — Sistema de Enquetes",
+    "description": "API do Enlace (Laravel 12). Autenticação por sessão via cookie: rode \"Login\" primeiro e o Postman guarda o cookie automaticamente para as rotas protegidas.\n\nVariáveis:\n- base_url: http://localhost:8000/api\n- poll_id / option_id: preenchidos manualmente após criar uma enquete\n- voter_token: identifica um visitante não logado em enquetes anônimas\n- reset_token: token recebido por e-mail em /forgot-password",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api" },
+    { "key": "poll_id", "value": "1" },
+    { "key": "option_id", "value": "1" },
+    { "key": "voter_token", "value": "visitante-teste-0001" },
+    { "key": "reset_token", "value": "cole-o-token-do-email" }
+  ],
+  "item": [
+    {
+      "name": "Autenticação",
+      "item": [
+        {
+          "name": "Cadastro",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pedro\",\n  \"email\": \"pedro@gmail.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/register", "host": ["{{base_url}}"], "path": ["register"] },
+            "description": "Cria um usuário. O e-mail passa por validação de formato + DNS do domínio."
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"pedro@gmail.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] },
+            "description": "Autentica e cria a sessão. O cookie fica salvo no Postman e é reenviado nas próximas chamadas."
+          }
+        },
+        {
+          "name": "Usuário logado (me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/me", "host": ["{{base_url}}"], "path": ["me"] },
+            "description": "Retorna o usuário da sessão, ou 401 se não autenticado."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/logout", "host": ["{{base_url}}"], "path": ["logout"] }
+          }
+        },
+        {
+          "name": "Esqueci minha senha",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"pedro@gmail.com\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/forgot-password", "host": ["{{base_url}}"], "path": ["forgot-password"] },
+            "description": "Envia o link de recuperação por e-mail (Mailtrap). Sempre responde 200 para não revelar se o e-mail existe. Copie o token do link recebido e use em \"Redefinir senha\"."
+          }
+        },
+        {
+          "name": "Redefinir senha",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{reset_token}}\",\n  \"email\": \"pedro@gmail.com\",\n  \"password\": \"novaSenha123\",\n  \"password_confirmation\": \"novaSenha123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/reset-password", "host": ["{{base_url}}"], "path": ["reset-password"] },
+            "description": "Redefine a senha usando o token do e-mail. Retorna 422 se o token for inválido ou expirado."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enquetes",
+      "item": [
+        {
+          "name": "Listar enquetes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/polls", "host": ["{{base_url}}"], "path": ["polls"] },
+            "description": "Lista todas as enquetes com contagem de votos e autor."
+          }
+        },
+        {
+          "name": "Detalhe da enquete",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/polls/{{poll_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["polls", "{{poll_id}}"]
+            },
+            "description": "Retorna a enquete com opções e autor, mais has_voted e user_vote_option_id do usuário logado."
+          }
+        },
+        {
+          "name": "Detalhe da enquete (visitante anônimo)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/polls/{{poll_id}}?voter_token={{voter_token}}",
+              "host": ["{{base_url}}"],
+              "path": ["polls", "{{poll_id}}"],
+              "query": [{ "key": "voter_token", "value": "{{voter_token}}" }]
+            },
+            "description": "Sem login, em enquete anônima, o has_voted é calculado pelo voter_token."
+          }
+        },
+        {
+          "name": "Criar enquete",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Qual linguagem preferida?\",\n  \"description\": \"Escolha uma\",\n  \"options\": [\"PHP\", \"JavaScript\", \"Python\"]\n}"
+            },
+            "url": { "raw": "{{base_url}}/polls", "host": ["{{base_url}}"], "path": ["polls"] },
+            "description": "Requer login. De 2 a 8 opções."
+          }
+        },
+        {
+          "name": "Criar enquete anônima",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Enquete aberta ao público\",\n  \"description\": \"Qualquer pessoa com o link pode votar\",\n  \"options\": [\"Sim\", \"Não\"],\n  \"is_anonymous\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/polls", "host": ["{{base_url}}"], "path": ["polls"] },
+            "description": "is_anonymous = true libera o voto sem login, identificando o votante por voter_token."
+          }
+        },
+        {
+          "name": "Editar enquete (só dono)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Título atualizado\",\n  \"description\": \"Nova descrição\",\n  \"options\": [\"PHP\", \"JavaScript\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/polls/{{poll_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["polls", "{{poll_id}}"]
+            },
+            "description": "Retorna 403 se não for o criador (Policy)."
+          }
+        },
+        {
+          "name": "Excluir enquete (só dono)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/polls/{{poll_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["polls", "{{poll_id}}"]
+            },
+            "description": "Retorna 403 se não for o criador (Policy)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Votos",
+      "item": [
+        {
+          "name": "Votar (usuário logado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"option_id\": {{option_id}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/polls/{{poll_id}}/vote",
+              "host": ["{{base_url}}"],
+              "path": ["polls", "{{poll_id}}", "vote"]
+            },
+            "description": "Um voto por usuário por enquete (422 na segunda tentativa). Rate limit de 10/min. Dispara e-mail de confirmação ao votante e aviso ao dono (via fila: rode php artisan queue:work)."
+          }
+        },
+        {
+          "name": "Votar (anônimo, sem login)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"option_id\": {{option_id}},\n  \"voter_token\": \"{{voter_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/polls/{{poll_id}}/vote",
+              "host": ["{{base_url}}"],
+              "path": ["polls", "{{poll_id}}", "vote"]
+            },
+            "description": "Só funciona em enquete com is_anonymous = true (senão retorna 401). O mesmo voter_token não vota duas vezes (422). O votante anônimo não recebe e-mail; o dono da enquete continua sendo avisado."
+          }
+        },
+        {
+          "name": "Histórico de votos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/my-votes", "host": ["{{base_url}}"], "path": ["my-votes"] },
+            "description": "Enquetes em que o usuário logado votou."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tempo real",
+      "item": [
+        {
+          "name": "Stream de resultados (SSE)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "text/event-stream" }],
+            "url": {
+              "raw": "{{base_url}}/polls/{{poll_id}}/stream",
+              "host": ["{{base_url}}"],
+              "path": ["polls", "{{poll_id}}", "stream"]
+            },
+            "description": "Server-Sent Events. Envia um snapshot dos resultados (id, text, votes) e fecha; o navegador reconecta sozinho a cada 1s (campo retry), mantendo os resultados ao vivo sem bloquear o servidor."
+          }
+        }
+      ]
+    }
+  ]
+}
