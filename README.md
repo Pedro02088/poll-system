@@ -45,6 +45,8 @@ de responsabilidades e boas práticas.
 - Histórico de votos do usuário
 - Recuperação de senha por e-mail (token com expiração, fluxo nativo do Laravel)
 - Notificações por e-mail (confirmação de voto ao votante + aviso ao dono da enquete), enviadas via fila
+- Enquetes anônimas: voto sem login, com um voto por dispositivo (token no navegador)
+- Estado "já votei": quem já votou vê os resultados direto, com a própria escolha destacada
 
 ---
 
@@ -220,9 +222,114 @@ Todas as chaves estrangeiras usam `ON DELETE CASCADE`. O diagrama está em
 
 ---
 
+## Deploy
+
+> **URLs:** front-end: _(a definir)_ · back-end: _(a definir)_
+
+### Arquitetura
+
+| Camada | Serviço | Observação |
+|--------|---------|------------|
+| Back-end (API) | Railway | PHP + MySQL gerenciado |
+| Worker da fila | Railway (2º serviço, mesmo repo) | `php artisan queue:work` para os e-mails |
+| Banco | Railway MySQL | plugin do próprio Railway |
+| Front-end | Vercel | build estático do Vite |
+
+Front e back ficam em **domínios diferentes**, então a autenticação por sessão
+depende de cookie *cross-site*. Isso exige três coisas:
+
+1. `SESSION_SAME_SITE=none` — sem isso o navegador não envia o cookie para outro domínio.
+2. `SESSION_SECURE_COOKIE=true` — o navegador só aceita `SameSite=None` em HTTPS.
+3. `trustProxies` habilitado (já configurado em `bootstrap/app.php`) — o Railway
+   termina o TLS num proxy; sem confiar nele o Laravel enxerga a requisição como
+   `http` e não marca o cookie como `Secure`.
+
+O CORS lê a origem liberada de `FRONTEND_URL` (aceita várias, separadas por
+vírgula) e mantém `supports_credentials: true`.
+
+### Sobre o tempo real (SSE) em produção
+
+O endpoint `/api/polls/{id}/stream` **não mantém conexão aberta**: envia um
+snapshot dos resultados e encerra, e o navegador reconecta sozinho a cada 1s
+(campo `retry` do EventSource). Essa escolha evita segurar um processo do
+servidor por conexão — o que seria um problema tanto no `artisan serve` quanto
+num pool de workers em produção.
+
+### Back-end no Railway
+
+1. Crie um projeto a partir do repositório, apontando a raiz para `backend/`.
+2. Adicione o plugin **MySQL** — ele injeta as variáveis do banco.
+3. Configure as variáveis de ambiente (seção abaixo).
+4. O `Procfile` define dois processos. O Railway roda **um processo por serviço**,
+   então crie **dois serviços a partir do mesmo repo**:
+   - **web** — usa a linha `web` do `Procfile` (roda as migrations e sobe a API);
+   - **worker** — sobrescreva o start command para `php artisan queue:work --sleep=3 --tries=3 --max-time=3600`.
+
+> Sem o serviço **worker**, a aplicação funciona normalmente — só os e-mails
+> (confirmação de voto, aviso ao dono e recuperação de senha) ficam pendentes na
+> tabela `jobs` até haver um worker para processá-los.
+
+#### Variáveis de ambiente (Railway)
+
+```
+APP_NAME=Enlace
+APP_ENV=production
+APP_KEY=                      # gere com: php artisan key:generate --show
+APP_DEBUG=false
+APP_URL=https://SEU-BACKEND.up.railway.app
+
+DB_CONNECTION=mysql
+DB_HOST=...                   # fornecidos pelo plugin MySQL
+DB_PORT=...
+DB_DATABASE=...
+DB_USERNAME=...
+DB_PASSWORD=...
+
+FRONTEND_URL=https://SEU-FRONT.vercel.app
+
+SESSION_DRIVER=database
+SESSION_SAME_SITE=none
+SESSION_SECURE_COOKIE=true
+SESSION_DOMAIN=               # deixe vazio
+
+QUEUE_CONNECTION=database
+
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=...
+MAIL_PASSWORD=...
+MAIL_FROM_ADDRESS="nao-responda@enlace.com"
+MAIL_FROM_NAME="Enlace"
+```
+
+### Front-end na Vercel
+
+1. Importe o repositório e defina **Root Directory** como `frontend/`.
+2. Framework: Vite (detectado automaticamente; build `npm run build`, saída `dist`).
+3. Variável de ambiente:
+
+```
+VITE_API_URL=https://SEU-BACKEND.up.railway.app/api
+```
+
+> O `VITE_API_URL` é lido de variável de ambiente, com fallback para
+> `http://localhost:8000/api` apenas em desenvolvimento. Como o Vite embute a
+> variável **no momento do build**, defina-a antes do deploy e refaça o build ao
+> alterá-la — se ela faltar na Vercel, o front tentará chamar `localhost` em
+> produção.
+
+### Ordem sugerida
+
+1. Suba o back-end no Railway e anote a URL.
+2. Faça o deploy do front na Vercel com `VITE_API_URL` apontando para ela.
+3. Volte ao Railway e ajuste `FRONTEND_URL` com a URL da Vercel (CORS).
+4. Redeploy do back-end para aplicar.
+
+---
+
 ## Possíveis melhorias
 
-- Enquetes anônimas
 - Paginação na listagem
 - Testes automatizados (PHPUnit / Vitest)
 - Deploy (Railway/Render + Vercel)

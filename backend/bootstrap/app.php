@@ -16,6 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \Illuminate\Session\Middleware\StartSession::class,
         ]);
+
+        // Railway/Vercel terminam o TLS num proxy. Sem confiar nele, o Laravel
+        // enxerga a requisição como http e não envia o cookie de sessão marcado
+        // como Secure (necessário para SameSite=None cross-domain).
+        $middleware->trustProxies(at: '*');
     })
 ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (Illuminate\Auth\AuthenticationException $e, Request $request) {
