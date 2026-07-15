@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { pollService } from '../services/pollService'
+import { getVoterToken } from '../services/voterToken'
 import { useSSE } from '../hooks/useSSE'
 import { useAuth } from '../context/AuthContext'
 import Layout from '../components/Layout'
@@ -22,16 +23,16 @@ export default function PollDetail() {
   const liveResults = useSSE(voted ? `${API}/polls/${id}/stream` : null)
 
   useEffect(() => {
-    pollService.get(id).then((res) => {
+    pollService.get(id, user ? null : getVoterToken()).then((res) => {
       setPoll(res.data)
       if (res.data.has_voted) setVoted(true)
     })
-  }, [id])
+  }, [id, user])
 
   const handleVote = async (optionId) => {
     setError('')
     try {
-      await pollService.vote(id, optionId)
+      await pollService.vote(id, optionId, user ? null : getVoterToken())
       setVoted(true)
     } catch (e) {
       setError(e.response?.data?.message || 'Erro ao votar')
@@ -67,7 +68,14 @@ export default function PollDetail() {
       <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm shadow-slate-200/40">
         <div className="flex justify-between items-start gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-slate-800 font-display">{poll.title}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold text-slate-800 font-display">{poll.title}</h1>
+              {poll.is_anonymous && (
+                <span className="text-[10px] font-semibold uppercase tracking-wide border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full">
+                  Anônima
+                </span>
+              )}
+            </div>
             {poll.description && <p className="text-slate-500 mt-1">{poll.description}</p>}
             <p className="text-sm text-slate-400 mt-2">por {poll.user?.name}</p>
           </div>
@@ -89,15 +97,26 @@ export default function PollDetail() {
 
         <div className="mt-6">
           {!voted ? (
-            <>
-              <p className="font-semibold text-slate-700 mb-3">Escolha uma opção:</p>
-              {poll.options.map((opt) => (
-                <button key={opt.id} onClick={() => handleVote(opt.id)}
-                  className="w-full text-left px-4 py-3.5 mb-2.5 border border-slate-200 rounded-xl font-medium text-slate-700 transition-all duration-200 hover:border-brand hover:bg-brand-soft hover:scale-[1.01] active:scale-[0.99]">
-                  {opt.text}
-                </button>
-              ))}
-            </>
+            !user && !poll.is_anonymous ? (
+              <div className="text-center border border-slate-200 rounded-xl px-4 py-8">
+                <p className="font-semibold text-slate-700">Esta enquete exige login</p>
+                <p className="text-sm text-slate-400 mt-1 mb-5">Entre na sua conta para registrar seu voto.</p>
+                <Link to="/login"
+                  className="btn-gradient inline-block text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.97] transition-all duration-200">
+                  Entrar para votar
+                </Link>
+              </div>
+            ) : (
+              <>
+                <p className="font-semibold text-slate-700 mb-3">Escolha uma opção:</p>
+                {poll.options.map((opt) => (
+                  <button key={opt.id} onClick={() => handleVote(opt.id)}
+                    className="w-full text-left px-4 py-3.5 mb-2.5 border border-slate-200 rounded-xl font-medium text-slate-700 transition-all duration-200 hover:border-brand hover:bg-brand-soft hover:scale-[1.01] active:scale-[0.99]">
+                    {opt.text}
+                  </button>
+                ))}
+              </>
+            )
           ) : (
             <div className="animate-fade-in">
               {poll.has_voted && (

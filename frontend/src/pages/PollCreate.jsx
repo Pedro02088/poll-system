@@ -11,6 +11,7 @@ export default function PollCreate() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [options, setOptions] = useState(['', ''])
+  const [isAnonymous, setIsAnonymous] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -25,7 +26,7 @@ export default function PollCreate() {
     setError(''); setLoading(true)
     try {
       const clean = options.map((o) => o.trim()).filter(Boolean)
-      const res = await pollService.create({ title, description, options: clean })
+      const res = await pollService.create({ title, description, options: clean, is_anonymous: isAnonymous })
       navigate(`/polls/${res.data.id}`)
     } catch {
       setError('Erro ao criar. Preencha título e ao menos 2 opções.')
@@ -66,7 +67,19 @@ export default function PollCreate() {
           </button>
         )}
 
-        <div className="mt-4">
+        <label className="flex items-start gap-3 mt-5 p-3.5 rounded-xl border border-slate-200 cursor-pointer transition-colors hover:border-brand/50 hover:bg-brand-soft/40">
+          <button type="button" role="switch" aria-checked={isAnonymous}
+            onClick={() => setIsAnonymous(!isAnonymous)}
+            className={`relative shrink-0 mt-0.5 w-10 h-6 rounded-full transition-colors duration-200 ${isAnonymous ? 'bg-brand' : 'bg-slate-300'}`}>
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${isAnonymous ? 'translate-x-4' : ''}`} />
+          </button>
+          <span>
+            <span className="block text-sm font-medium text-slate-700">Permitir votos anônimos (sem login)</span>
+            <span className="block text-xs text-slate-400 mt-0.5">Qualquer pessoa com o link pode votar, uma vez por dispositivo.</span>
+          </span>
+        </label>
+
+        <div className="mt-5">
           <Button type="submit" disabled={loading}>{loading ? 'Criando...' : 'Criar enquete'}</Button>
         </div>
       </form>

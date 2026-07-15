@@ -21,7 +21,7 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/" element={<ProtectedRoute><PollList /></ProtectedRoute>} />
           <Route path="/polls/new" element={<ProtectedRoute><PollCreate /></ProtectedRoute>} />
-          <Route path="/polls/:id" element={<ProtectedRoute><PollDetail /></ProtectedRoute>} />
+          <Route path="/polls/:id" element={<PollDetail />} />
           <Route path="/my-votes" element={<ProtectedRoute><MyVotes /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>

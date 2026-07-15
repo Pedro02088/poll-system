@@ -17,6 +17,7 @@ class StorePollRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'expires_at' => ['nullable', 'date'],
+            'is_anonymous' => ['nullable', 'boolean'],
             'options' => ['required', 'array', 'min:2', 'max:8'],
             'options.*' => ['required', 'string', 'max:255'],
         ];

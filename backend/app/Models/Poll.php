@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Poll extends Model
 {
-    protected $fillable = ['user_id', 'title', 'description', 'expires_at'];
+    protected $fillable = ['user_id', 'title', 'description', 'expires_at', 'is_anonymous'];
+
+    protected $casts = ['is_anonymous' => 'boolean'];
 
     public function options()
     {

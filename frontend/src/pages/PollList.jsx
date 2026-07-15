@@ -63,7 +63,14 @@ export default function PollList() {
             <Link key={poll.id} to={`/polls/${poll.id}`}
               style={{ animationDelay: `${i * 60}ms` }}
               className="animate-fade-in-up bg-white p-5 rounded-2xl border border-slate-100 shadow-sm shadow-slate-200/40 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/10 hover:border-brand/30 group">
-              <h2 className="text-lg font-bold text-slate-800 group-hover:text-brand transition-colors">{poll.title}</h2>
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="text-lg font-bold text-slate-800 group-hover:text-brand transition-colors">{poll.title}</h2>
+                {poll.is_anonymous && (
+                  <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full">
+                    Anônima
+                  </span>
+                )}
+              </div>
               {poll.description && <p className="text-slate-500 text-sm mt-1 line-clamp-2">{poll.description}</p>}
               <div className="flex justify-between items-center mt-3 text-sm">
                 <span className="text-slate-400">por {poll.user?.name}</span>
