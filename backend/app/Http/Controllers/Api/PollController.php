@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePollRequest;
+use App\Http\Requests\UpdatePollRequest;
 use App\Models\Poll;
 use App\Models\Vote;
 use Illuminate\Http\Request;
@@ -54,11 +55,16 @@ class PollController extends Controller
         return response()->json($data);
     }
 
-    public function update(StorePollRequest $request, Poll $poll)
+    public function update(UpdatePollRequest $request, Poll $poll)
     {
         $this->authorize('update', $poll);
 
-        $poll->update($request->only('title', 'description', 'expires_at'));
+        $poll->update([
+            'title' => $request->title,
+            'description' => $request->description,
+            'expires_at' => $request->expires_at,
+            'is_anonymous' => $request->boolean('is_anonymous'),
+        ]);
 
         return response()->json($poll->load('options'));
     }

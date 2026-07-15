@@ -85,10 +85,16 @@ export default function PollDetail() {
               <Icon name="share" className="w-5 h-5" />
             </button>
             {isOwner && (
-              <button onClick={handleDelete} title="Excluir"
-                className="text-slate-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-colors">
-                <Icon name="trash" className="w-5 h-5" />
-              </button>
+              <>
+                <Link to={`/polls/${id}/edit`} title="Editar"
+                  className="text-slate-400 hover:text-brand p-2 rounded-lg hover:bg-brand-soft transition-colors">
+                  <Icon name="edit" className="w-5 h-5" />
+                </Link>
+                <button onClick={handleDelete} title="Excluir"
+                  className="text-slate-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-colors">
+                  <Icon name="trash" className="w-5 h-5" />
+                </button>
+              </>
             )}
           </div>
         </div>

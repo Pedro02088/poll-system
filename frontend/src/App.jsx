@@ -6,6 +6,7 @@ import Register from './pages/Register'
 import PollList from './pages/PollList'
 import PollCreate from './pages/PollCreate'
 import PollDetail from './pages/PollDetail'
+import PollEdit from './pages/PollEdit'
 import MyVotes from './pages/MyVotes'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/" element={<ProtectedRoute><PollList /></ProtectedRoute>} />
           <Route path="/polls/new" element={<ProtectedRoute><PollCreate /></ProtectedRoute>} />
           <Route path="/polls/:id" element={<PollDetail />} />
+          <Route path="/polls/:id/edit" element={<ProtectedRoute><PollEdit /></ProtectedRoute>} />
           <Route path="/my-votes" element={<ProtectedRoute><MyVotes /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>

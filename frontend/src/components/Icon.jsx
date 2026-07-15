@@ -6,6 +6,7 @@ const paths = {
   plus: 'M12 5v14M5 12h14',
   fire: 'M12 2s4 4 4 8a4 4 0 01-8 0c0-1 .5-2 .5-2S8 10 8 12a4 4 0 004 4',
   check: 'M20 6L9 17l-5-5',
+  edit: 'M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z',
 }
 
 export default function Icon({ name, className = 'w-5 h-5' }) {
