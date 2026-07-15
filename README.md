@@ -168,9 +168,18 @@ VITE_API_URL=http://localhost:8000/api
 | GET | `/api/polls/{id}` | Detalhe da enquete | Não |
 | PUT | `/api/polls/{id}` | Edita (só dono) | Sim |
 | DELETE | `/api/polls/{id}` | Exclui (só dono) | Sim |
-| POST | `/api/polls/{id}/vote` | Vota | Sim |
-| GET | `/api/polls/{id}/stream` | Resultados em tempo real (SSE) | Sim |
+| POST | `/api/polls/{id}/vote` | Vota | Depende ¹ |
+| GET | `/api/polls/{id}/stream` | Resultados em tempo real (SSE) | Não |
 | GET | `/api/my-votes` | Histórico de votos | Sim |
+
+> ¹ **O voto tem autenticação condicional.** Em enquete comum é obrigatório estar
+> logado — sem sessão a API responde `401`. Em enquete anônima
+> (`is_anonymous: true`) o voto é aceito sem login, e o votante é identificado
+> pelo `voter_token` enviado no corpo da requisição. Um usuário logado sempre
+> vota como ele mesmo, mesmo que envie um `voter_token`.
+
+O `stream` é público porque a tela de detalhe também é: qualquer pessoa com o
+link acompanha os resultados, mesmo sem conta.
 
 Uma collection do Postman com todas as rotas está em `/docs/poll-system.postman_collection.json`.
 
