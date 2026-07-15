@@ -291,7 +291,15 @@ anônimo, exigindo login.
 
 ## Deploy
 
-> **URLs:** front-end: _(a definir)_ · back-end: _(a definir)_
+> **O deploy não foi executado.** Esta seção documenta a arquitetura escolhida e
+> os requisitos que o ambiente exige — em especial o cookie de sessão *cross-site*
+> (`SameSite=None` + `Secure` + `trustProxies`) e o worker da fila para os e-mails.
+>
+> A configuração necessária **já está no repositório** e pronta para uso:
+> `Procfile` com os processos web e worker, CORS lendo a origem de `FRONTEND_URL`
+> (sem URL fixa no código) e `trustProxies` habilitado em `bootstrap/app.php`.
+> Publicar exige apenas criar os serviços e preencher as variáveis de ambiente
+> listadas abaixo.
 
 ### Arquitetura
 
@@ -399,7 +407,7 @@ VITE_API_URL=https://SEU-BACKEND.up.railway.app/api
 
 - Paginação na listagem
 - Testes automatizados (PHPUnit / Vitest)
-- Deploy (Railway/Render + Vercel)
+- Publicar o ambiente em produção (a configuração já está pronta — ver [Deploy](#deploy))
 
 ---
 
