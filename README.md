@@ -248,6 +248,47 @@ convivem na mesma tabela sem que uma regra invalide a outra.
 
 ---
 
+## Limitações conhecidas
+
+### Voto múltiplo em enquetes anônimas
+
+Enquetes anônimas garantem **um voto por dispositivo**, não por pessoa. O
+visitante é identificado por um UUID gerado na primeira visita e guardado no
+`localStorage` do navegador — como esse token é controlado pelo cliente, quem
+limpar o `localStorage`, abrir uma aba anônima ou editar o valor pelo DevTools
+consegue votar novamente.
+
+Isso é **inerente a voto sem login**: sem uma conta, não existe identidade
+confiável para amarrar o voto. As mitigações possíveis têm custos que não se
+justificam neste escopo:
+
+| Mitigação | Por que não foi adotada |
+|-----------|-------------------------|
+| Limitar por IP | Bloqueia usuários legítimos que compartilham a mesma rede (empresa, faculdade, operadora móvel com CGNAT) |
+| Fingerprint do navegador | Impreciso, tem implicações de privacidade e esbarra na LGPD |
+| CAPTCHA | Atrapalha a experiência e apenas encarece o ataque, sem impedi-lo |
+
+**A regra continua sólida onde importa:** para usuários logados, o voto único é
+garantido pelo banco (`unique(user_id, poll_id)`) e não depende de nada vindo do
+cliente. Um usuário autenticado não burla a regra nem enviando um `voter_token`
+forjado — a identificação pela sessão tem precedência sobre o token.
+
+Quem precisar de contagem confiável deve criar a enquete **sem** a opção de voto
+anônimo, exigindo login.
+
+### Outras limitações
+
+- **`php artisan serve` é single-thread.** Em desenvolvimento, o SSE reconecta a
+  cada 1s e concorre com as demais requisições pelo único processo. Não afeta
+  produção, onde o servidor roda com múltiplos workers.
+- **Opções não são editáveis** após a criação: as FKs de `votes` usam
+  `ON DELETE CASCADE`, então alterar uma opção apagaria os votos registrados
+  nela.
+- **Provedores SMTP de teste limitam envios por segundo.** Por isso o aviso ao
+  dono da enquete sai com alguns segundos de atraso, via fila.
+
+---
+
 ## Deploy
 
 > **URLs:** front-end: _(a definir)_ · back-end: _(a definir)_
