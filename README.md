@@ -54,9 +54,9 @@ de responsabilidades e boas práticas.
 
 ```
 poll-system/
-├── backend/         API em Laravel 12
-├── frontend/        Interface em React + Vite
-├── .env.example     Modelo das variáveis de ambiente
+├── backend/         API em Laravel 12  (backend/.env.example)
+├── frontend/        Interface em React + Vite  (frontend/.env.example)
+├── docs/            Diagrama do banco, collection do Postman e screenshots
 ├── .gitignore
 └── README.md
 ```
