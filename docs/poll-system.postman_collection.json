@@ -147,10 +147,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Qual linguagem preferida?\",\n  \"description\": \"Escolha uma\",\n  \"options\": [\"PHP\", \"JavaScript\", \"Python\"]\n}"
+              "raw": "{\n  \"title\": \"Qual linguagem preferida?\",\n  \"description\": \"Escolha uma\",\n  \"options\": [\"PHP\", \"JavaScript\", \"Python\"],\n  \"expires_at\": null\n}"
             },
             "url": { "raw": "{{base_url}}/polls", "host": ["{{base_url}}"], "path": ["polls"] },
-            "description": "Requer login. De 2 a 8 opções."
+            "description": "Requer login (401 sem sessão). De 2 a 8 opções.\n\nexpires_at é opcional: com uma data no passado a enquete já nasce encerrada e o voto retorna 422. A resposta traz o campo calculado is_expired."
           }
         },
         {
@@ -170,6 +170,22 @@
           }
         },
         {
+          "name": "Criar enquete já encerrada (testar expiração)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Enquete encerrada\",\n  \"options\": [\"Sim\", \"Não\"],\n  \"expires_at\": \"2020-01-01 10:00:00\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/polls", "host": ["{{base_url}}"], "path": ["polls"] },
+            "description": "Cria uma enquete com data no passado (is_expired = true). Ao votar nela, a API responde 422 \"Esta enquete já foi encerrada\"."
+          }
+        },
+        {
           "name": "Editar enquete (só dono)",
           "request": {
             "method": "PUT",
@@ -179,14 +195,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Título atualizado\",\n  \"description\": \"Nova descrição\",\n  \"options\": [\"PHP\", \"JavaScript\"]\n}"
+              "raw": "{\n  \"title\": \"Título atualizado\",\n  \"description\": \"Nova descrição\",\n  \"expires_at\": null,\n  \"is_anonymous\": false\n}"
             },
             "url": {
               "raw": "{{base_url}}/polls/{{poll_id}}",
               "host": ["{{base_url}}"],
               "path": ["polls", "{{poll_id}}"]
             },
-            "description": "Retorna 403 se não for o criador (Policy)."
+            "description": "Edita os metadados da enquete. Retorna 403 se não for o criador (Policy) e 401 sem sessão.\n\nAs opções NÃO são editáveis: as FKs de votes usam ON DELETE CASCADE, então alterar uma opção apagaria os votos já registrados nela."
           }
         },
         {
@@ -224,7 +240,7 @@
               "host": ["{{base_url}}"],
               "path": ["polls", "{{poll_id}}", "vote"]
             },
-            "description": "Um voto por usuário por enquete (422 na segunda tentativa). Rate limit de 10/min. Dispara e-mail de confirmação ao votante e aviso ao dono (via fila: rode php artisan queue:work)."
+            "description": "Um voto por usuário por enquete (422 na segunda tentativa). Rate limit de 10/min. Retorna 422 se a enquete estiver encerrada (expires_at no passado) e 401 sem sessão em enquete não-anônima.\n\nDispara e-mail de confirmação ao votante e aviso ao dono (via fila: rode php artisan queue:work)."
           }
         },
         {
