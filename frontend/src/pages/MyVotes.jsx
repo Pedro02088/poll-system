@@ -16,15 +16,15 @@ export default function MyVotes() {
   return (
     <Layout>
       <button onClick={() => navigate('/')}
-        className="flex items-center gap-1 text-slate-500 hover:text-brand font-medium mb-5">
-        <Icon name="back" className="w-4 h-4" /> Voltar
+        className="group flex items-center gap-1 text-slate-500 hover:text-brand font-medium mb-5 transition-colors">
+        <Icon name="back" className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" /> Voltar
       </button>
 
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Meus votos</h1>
+      <h1 className="text-2xl font-bold text-slate-800 mb-6 font-display">Meus votos</h1>
 
       {loading ? (
         <div className="grid gap-3">
-          {[1,2].map((i) => <div key={i} className="bg-white h-16 rounded-xl animate-pulse border border-slate-100" />)}
+          {[1, 2].map((i) => <div key={i} className="skeleton h-16 rounded-xl" />)}
         </div>
       ) : votes.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
@@ -32,10 +32,12 @@ export default function MyVotes() {
         </div>
       ) : (
         <div className="grid gap-3">
-          {votes.map((v) => (
+          {votes.map((v, i) => (
             <Link key={v.poll_id} to={`/polls/${v.poll_id}`}
-              className="bg-white p-4 rounded-xl border border-slate-100 hover:border-brand/40 hover:shadow-sm">
-              <span className="font-semibold text-slate-800">{v.poll_title}</span>
+              style={{ animationDelay: `${i * 60}ms` }}
+              className="animate-fade-in-up bg-white p-4 rounded-xl border border-slate-100 shadow-sm shadow-slate-200/40 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-md hover:shadow-blue-500/10 group flex items-center justify-between">
+              <span className="font-semibold text-slate-800 group-hover:text-brand transition-colors">{v.poll_title}</span>
+              <Icon name="back" className="w-4 h-4 text-slate-300 rotate-180 group-hover:text-brand group-hover:translate-x-0.5 transition-all" />
             </Link>
           ))}
         </div>
