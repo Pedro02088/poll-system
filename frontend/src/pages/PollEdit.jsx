@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Navigate } from 'react-router-dom'
 import { pollService } from '../services/pollService'
+import { useAuth } from '../context/AuthContext'
 import Layout from '../components/Layout'
 import PollForm from '../components/PollForm'
 import Icon from '../components/Icon'
@@ -13,6 +14,7 @@ function toInputValue(iso) {
 export default function PollEdit() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [poll, setPoll] = useState(null)
   const [error, setError] = useState('')
 
@@ -38,6 +40,18 @@ export default function PollEdit() {
   }
 
   if (!poll) return <Layout><div className="skeleton h-64 rounded-2xl max-w-lg" /></Layout>
+
+  // O backend já barra com 403, mas sem este guard um não-dono conseguiria abrir
+  // o formulário e só descobriria o bloqueio ao tentar salvar.
+  if (user && poll.user_id !== user.id) {
+    return (
+      <Navigate
+        to={`/polls/${id}`}
+        replace
+        state={{ aviso: 'Apenas quem criou a enquete pode editá-la.' }}
+      />
+    )
+  }
 
   return (
     <Layout>

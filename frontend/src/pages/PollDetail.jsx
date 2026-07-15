@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import { pollService } from '../services/pollService'
 import { getVoterToken } from '../services/voterToken'
 import { useSSE } from '../hooks/useSSE'
@@ -13,7 +13,10 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 export default function PollDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
+  // Aviso vindo de um redirect (ex.: tentativa de editar enquete de outro usuário).
+  const [aviso, setAviso] = useState(location.state?.aviso ?? '')
   const [poll, setPoll] = useState(null)
   const [voted, setVoted] = useState(false)
   const [error, setError] = useState('')
@@ -84,6 +87,15 @@ export default function PollDetail() {
         className="group flex items-center gap-1 text-slate-500 hover:text-brand font-medium mb-5 transition-colors">
         <Icon name="back" className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" /> Voltar
       </button>
+
+      {aviso && (
+        <div className="flex items-start justify-between gap-3 bg-amber-50 border border-amber-100 text-amber-800 text-sm px-4 py-3 rounded-xl mb-4 animate-fade-in">
+          <span>{aviso}</span>
+          <button onClick={() => setAviso('')} className="text-amber-500 hover:text-amber-700 font-semibold shrink-0" aria-label="Fechar aviso">
+            ✕
+          </button>
+        </div>
+      )}
 
       <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm shadow-slate-200/40">
         <div className="flex justify-between items-start gap-4">
