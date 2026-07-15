@@ -34,4 +34,32 @@ class Poll extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Um voto por pessoa. O votante é identificado pelo usuário logado ou,
+     * em enquete anônima, pelo token guardado no navegador do visitante.
+     */
+    public function hasVoteFrom(?User $user, ?string $voterToken): bool
+    {
+        return $this->votes()
+            ->when($user, fn ($q) => $q->where('user_id', $user->id))
+            ->when(! $user, fn ($q) => $q->where('voter_token', $voterToken))
+            ->exists();
+    }
+
+    /** Enquete anônima aceita voto de visitante; as demais exigem login. */
+    public function aceitaVotoDe(?User $user): bool
+    {
+        return $user !== null || $this->is_anonymous;
+    }
+
+    /** Registra o voto do usuário logado ou do visitante anônimo. */
+    public function registrarVoto(?User $user, ?string $voterToken, int $optionId): Vote
+    {
+        return $this->votes()->create([
+            'user_id' => $user?->id,
+            'voter_token' => $user ? null : $voterToken,
+            'option_id' => $optionId,
+        ]);
+    }
 }

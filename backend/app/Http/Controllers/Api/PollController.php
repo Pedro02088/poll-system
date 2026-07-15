@@ -5,8 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePollRequest;
 use App\Http\Requests\UpdatePollRequest;
+use App\Http\Requests\VoteRequest;
 use App\Models\Poll;
+use App\Models\User;
 use App\Models\Vote;
+use App\Notifications\NewVoteReceived;
+use App\Notifications\VoteConfirmation;
 use Illuminate\Http\Request;
 
 class PollController extends Controller
@@ -78,58 +82,50 @@ class PollController extends Controller
         return response()->json(['message' => 'Enquete excluída']);
     }
 
-    public function vote(Request $request, Poll $poll)
+    public function vote(VoteRequest $request, Poll $poll)
     {
-        $request->validate([
-            'option_id' => ['required', 'exists:options,id'],
-            'voter_token' => ['nullable', 'string', 'max:64'],
-        ]);
+        $usuario = $request->user();
+        $token = $request->voter_token;
 
         if ($poll->is_expired) {
             return response()->json(['message' => 'Esta enquete já foi encerrada'], 422);
         }
 
-        $usuario = $request->user();
-
-        // Enquete não-anônima exige login. Anônima aceita visitante identificado por token.
-        if (! $usuario && ! $poll->is_anonymous) {
+        if (! $poll->aceitaVotoDe($usuario)) {
             return response()->json(['message' => 'Não autenticado'], 401);
         }
 
-        if ($usuario) {
-            $ja_votou = Vote::where('user_id', $usuario->id)
-                ->where('poll_id', $poll->id)
-                ->exists();
-        } else {
-            if (! $request->voter_token) {
-                return response()->json(['message' => 'Identificação do votante ausente'], 422);
-            }
-
-            $ja_votou = Vote::where('voter_token', $request->voter_token)
-                ->where('poll_id', $poll->id)
-                ->exists();
+        if (! $usuario && ! $token) {
+            return response()->json(['message' => 'Identificação do votante ausente'], 422);
         }
 
-        if ($ja_votou) {
+        if ($poll->hasVoteFrom($usuario, $token)) {
             return response()->json(['message' => 'Você já votou nesta enquete'], 422);
         }
 
-        Vote::create([
-            'user_id' => $usuario?->id,
-            'voter_token' => $usuario ? null : $request->voter_token,
-            'poll_id' => $poll->id,
-            'option_id' => $request->option_id,
-        ]);
+        $poll->registrarVoto($usuario, $token, $request->option_id);
+        $this->notificarVoto($poll, $usuario);
 
+        return response()->json(['message' => 'Voto registrado']);
+    }
+
+    /**
+     * As notificações são enfileiradas (ShouldQueue) para não atrasar a resposta
+     * do voto. O aviso ao dono sai com atraso porque provedores SMTP de teste
+     * limitam envios por segundo e recusariam os dois e-mails em sequência.
+     */
+    private function notificarVoto(Poll $poll, ?User $votante): void
+    {
         $poll->load('user');
 
         // Votante anônimo não tem e-mail: só o dono da enquete é notificado.
-        if ($usuario) {
-            $usuario->notify(new \App\Notifications\VoteConfirmation($poll->title));
+        if ($votante) {
+            $votante->notify(new VoteConfirmation($poll->title));
         }
-        $poll->user->notify((new \App\Notifications\NewVoteReceived($poll->title))->delay(now()->addSeconds(3)));
 
-        return response()->json(['message' => 'Voto registrado']);
+        $poll->user->notify(
+            (new NewVoteReceived($poll->title))->delay(now()->addSeconds(3))
+        );
     }
 
     public function myVotes(Request $request)
