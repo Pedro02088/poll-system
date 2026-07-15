@@ -23,7 +23,6 @@ de responsabilidades e boas práticas.
 - React Router
 - Axios
 - Tailwind CSS
-- Chart.js (gráfico de resultado)
 
 ---
 
@@ -38,7 +37,7 @@ de responsabilidades e boas práticas.
 - Resultados em **tempo real** via SSE (atualizam sozinhos em todas as telas)
 
 ### Diferenciais implementados
-- Barras de resultado animadas + gráfico de rosca (Chart.js), com destaque para a opção líder
+- Barras de resultado animadas em tempo real, com destaque para a opção líder
 - Busca de enquetes e ordenação por mais votadas
 - Rate limiting nos votos
 - Validação forte de e-mail (formato + DNS)
