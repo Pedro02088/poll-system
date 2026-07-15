@@ -31,9 +31,22 @@ class PollController extends Controller
         return response()->json($poll->load('options'), 201);
     }
 
-    public function show(Poll $poll)
+    public function show(Request $request, Poll $poll)
     {
-        return $poll->load('options', 'user:id,name')->loadCount('votes');
+        $poll->load('options', 'user:id,name')->loadCount('votes');
+
+        $userVote = null;
+        if ($request->user()) {
+            $userVote = Vote::where('user_id', $request->user()->id)
+                ->where('poll_id', $poll->id)
+                ->first();
+        }
+
+        $data = $poll->toArray();
+        $data['has_voted'] = $userVote !== null;
+        $data['user_vote_option_id'] = $userVote?->option_id;
+
+        return response()->json($data);
     }
 
     public function update(StorePollRequest $request, Poll $poll)

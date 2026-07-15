@@ -22,7 +22,10 @@ export default function PollDetail() {
   const liveResults = useSSE(voted ? `${API}/polls/${id}/stream` : null)
 
   useEffect(() => {
-    pollService.get(id).then((res) => setPoll(res.data))
+    pollService.get(id).then((res) => {
+      setPoll(res.data)
+      if (res.data.has_voted) setVoted(true)
+    })
   }, [id])
 
   const handleVote = async (optionId) => {
@@ -97,6 +100,13 @@ export default function PollDetail() {
             </>
           ) : (
             <div className="animate-fade-in">
+              {poll.has_voted && (
+                <div className="flex items-center gap-2 bg-brand-soft text-brand text-sm font-medium px-4 py-2.5 rounded-xl mb-4">
+                  <Icon name="check" className="w-4 h-4 shrink-0" />
+                  Você já votou nesta enquete.
+                </div>
+              )}
+
               <div className="flex items-center justify-between mb-4">
                 <p className="font-semibold text-slate-700">Resultados</p>
                 <span className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
@@ -110,7 +120,8 @@ export default function PollDetail() {
 
               {results.map((opt) => (
                 <ResultBar key={opt.id} text={opt.text} votes={opt.votes} total={total}
-                  highlight={opt.votes === maxVotes && maxVotes > 0} />
+                  highlight={opt.votes === maxVotes && maxVotes > 0}
+                  chosen={opt.id === poll.user_vote_option_id} />
               ))}
 
               <p className="text-sm text-slate-400 mt-5 pt-4 border-t border-slate-100">

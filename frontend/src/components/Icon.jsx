@@ -5,6 +5,7 @@ const paths = {
   search: 'M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z',
   plus: 'M12 5v14M5 12h14',
   fire: 'M12 2s4 4 4 8a4 4 0 01-8 0c0-1 .5-2 .5-2S8 10 8 12a4 4 0 004 4',
+  check: 'M20 6L9 17l-5-5',
 }
 
 export default function Icon({ name, className = 'w-5 h-5' }) {
