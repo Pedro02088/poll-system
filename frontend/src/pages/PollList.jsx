@@ -9,9 +9,13 @@ export default function PollList() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [sortByVotes, setSortByVotes] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    pollService.list().then((res) => setPolls(res.data)).finally(() => setLoading(false))
+    pollService.list()
+      .then((res) => setPolls(res.data))
+      .catch(() => setError('Não foi possível carregar as enquetes. Verifique sua conexão e tente novamente.'))
+      .finally(() => setLoading(false))
   }, [])
 
   const filtered = polls
@@ -51,6 +55,14 @@ export default function PollList() {
       {loading ? (
         <div className="grid gap-4">
           {[1, 2, 3].map((i) => <div key={i} className="skeleton h-24 rounded-2xl" />)}
+        </div>
+      ) : error ? (
+        <div className="text-center py-16 bg-white rounded-2xl border border-red-100">
+          <p className="text-red-600 font-medium">{error}</p>
+          <button onClick={() => window.location.reload()}
+            className="text-brand font-semibold text-sm mt-3 hover:underline">
+            Tentar novamente
+          </button>
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">

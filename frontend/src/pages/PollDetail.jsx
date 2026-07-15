@@ -17,16 +17,23 @@ export default function PollDetail() {
   const [poll, setPoll] = useState(null)
   const [voted, setVoted] = useState(false)
   const [error, setError] = useState('')
+  const [loadError, setLoadError] = useState('')
 
   // Só conecta o stream de resultados depois do voto — durante a votação o
   // EventSource não precisa competir com o clique pelo processo do servidor.
   const liveResults = useSSE(voted ? `${API}/polls/${id}/stream` : null)
 
   useEffect(() => {
-    pollService.get(id, user ? null : getVoterToken()).then((res) => {
-      setPoll(res.data)
-      if (res.data.has_voted) setVoted(true)
-    })
+    pollService.get(id, user ? null : getVoterToken())
+      .then((res) => {
+        setPoll(res.data)
+        if (res.data.has_voted) setVoted(true)
+      })
+      .catch((e) => {
+        setLoadError(e.response?.status === 404
+          ? 'Esta enquete não existe ou foi removida.'
+          : 'Não foi possível carregar esta enquete. Verifique sua conexão e tente novamente.')
+      })
   }, [id, user])
 
   const handleVote = async (optionId) => {
@@ -49,6 +56,19 @@ export default function PollDetail() {
   const share = () => {
     navigator.clipboard.writeText(window.location.href)
     alert('Link copiado para a área de transferência.')
+  }
+
+  if (loadError) {
+    return (
+      <Layout>
+        <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
+          <p className="text-slate-700 font-semibold">{loadError}</p>
+          <Link to="/" className="text-brand font-semibold text-sm mt-3 inline-block hover:underline">
+            Voltar para as enquetes
+          </Link>
+        </div>
+      </Layout>
+    )
   }
 
   if (!poll) return <Layout><div className="skeleton h-48 rounded-2xl" /></Layout>

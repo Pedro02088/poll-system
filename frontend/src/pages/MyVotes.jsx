@@ -8,9 +8,13 @@ export default function MyVotes() {
   const navigate = useNavigate()
   const [votes, setVotes] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    api.get('/my-votes').then((res) => setVotes(res.data)).finally(() => setLoading(false))
+    api.get('/my-votes')
+      .then((res) => setVotes(res.data))
+      .catch(() => setError('Não foi possível carregar seus votos. Verifique sua conexão e tente novamente.'))
+      .finally(() => setLoading(false))
   }, [])
 
   return (
@@ -25,6 +29,14 @@ export default function MyVotes() {
       {loading ? (
         <div className="grid gap-3">
           {[1, 2].map((i) => <div key={i} className="skeleton h-16 rounded-xl" />)}
+        </div>
+      ) : error ? (
+        <div className="text-center py-16 bg-white rounded-2xl border border-red-100">
+          <p className="text-red-600 font-medium">{error}</p>
+          <button onClick={() => window.location.reload()}
+            className="text-brand font-semibold text-sm mt-3 hover:underline">
+            Tentar novamente
+          </button>
         </div>
       ) : votes.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
