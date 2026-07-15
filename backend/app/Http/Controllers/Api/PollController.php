@@ -79,6 +79,10 @@ class PollController extends Controller
             'voter_token' => ['nullable', 'string', 'max:64'],
         ]);
 
+        if ($poll->is_expired) {
+            return response()->json(['message' => 'Esta enquete já foi encerrada'], 422);
+        }
+
         $usuario = $request->user();
 
         // Enquete não-anônima exige login. Anônima aceita visitante identificado por token.

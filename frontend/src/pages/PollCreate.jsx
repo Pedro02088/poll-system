@@ -11,6 +11,7 @@ export default function PollCreate() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [options, setOptions] = useState(['', ''])
+  const [expiresAt, setExpiresAt] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -26,7 +27,13 @@ export default function PollCreate() {
     setError(''); setLoading(true)
     try {
       const clean = options.map((o) => o.trim()).filter(Boolean)
-      const res = await pollService.create({ title, description, options: clean, is_anonymous: isAnonymous })
+      const res = await pollService.create({
+        title,
+        description,
+        options: clean,
+        is_anonymous: isAnonymous,
+        expires_at: expiresAt || null,
+      })
       navigate(`/polls/${res.data.id}`)
     } catch {
       setError('Erro ao criar. Preencha título e ao menos 2 opções.')
@@ -66,6 +73,14 @@ export default function PollCreate() {
             <Icon name="plus" className="w-4 h-4" /> Adicionar opção
           </button>
         )}
+
+        <div className="mt-5">
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Encerrar em (opcional)</label>
+          <input type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)}
+            min={new Date().toISOString().slice(0, 16)}
+            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 transition-all duration-200 focus:bg-white focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/10" />
+          <p className="text-xs text-slate-400 mt-1.5">Depois desta data a enquete para de aceitar votos.</p>
+        </div>
 
         <label className="flex items-start gap-3 mt-5 p-3.5 rounded-xl border border-slate-200 cursor-pointer transition-colors hover:border-brand/50 hover:bg-brand-soft/40">
           <button type="button" role="switch" aria-checked={isAnonymous}

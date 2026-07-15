@@ -65,11 +65,18 @@ export default function PollList() {
               className="animate-fade-in-up bg-white p-5 rounded-2xl border border-slate-100 shadow-sm shadow-slate-200/40 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/10 hover:border-brand/30 group">
               <div className="flex items-start justify-between gap-3">
                 <h2 className="text-lg font-bold text-slate-800 group-hover:text-brand transition-colors">{poll.title}</h2>
-                {poll.is_anonymous && (
-                  <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full">
-                    Anônima
-                  </span>
-                )}
+                <span className="flex gap-1.5 shrink-0">
+                  {poll.is_expired && (
+                    <span className="text-[10px] font-semibold uppercase tracking-wide bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
+                      Encerrada
+                    </span>
+                  )}
+                  {poll.is_anonymous && (
+                    <span className="text-[10px] font-semibold uppercase tracking-wide border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full">
+                      Anônima
+                    </span>
+                  )}
+                </span>
               </div>
               {poll.description && <p className="text-slate-500 text-sm mt-1 line-clamp-2">{poll.description}</p>}
               <div className="flex justify-between items-center mt-3 text-sm">

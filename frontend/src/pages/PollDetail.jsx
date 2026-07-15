@@ -97,7 +97,16 @@ export default function PollDetail() {
 
         <div className="mt-6">
           {!voted ? (
-            !user && !poll.is_anonymous ? (
+            poll.is_expired ? (
+              <div className="text-center border border-slate-200 rounded-xl px-4 py-8">
+                <p className="font-semibold text-slate-700">Enquete encerrada</p>
+                <p className="text-sm text-slate-400 mt-1 mb-5">Esta enquete não aceita mais votos.</p>
+                <button onClick={() => setVoted(true)}
+                  className="text-brand font-semibold text-sm hover:underline">
+                  Ver resultados
+                </button>
+              </div>
+            ) : !user && !poll.is_anonymous ? (
               <div className="text-center border border-slate-200 rounded-xl px-4 py-8">
                 <p className="font-semibold text-slate-700">Esta enquete exige login</p>
                 <p className="text-sm text-slate-400 mt-1 mb-5">Entre na sua conta para registrar seu voto.</p>
@@ -128,13 +137,17 @@ export default function PollDetail() {
 
               <div className="flex items-center justify-between mb-4">
                 <p className="font-semibold text-slate-700">Resultados</p>
-                <span className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                {poll.is_expired ? (
+                  <span className="text-xs text-slate-400 font-medium">Encerrada</span>
+                ) : (
+                  <span className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                    </span>
+                    em tempo real
                   </span>
-                  em tempo real
-                </span>
+                )}
               </div>
 
               {results.map((opt) => (

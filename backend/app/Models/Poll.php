@@ -8,7 +8,17 @@ class Poll extends Model
 {
     protected $fillable = ['user_id', 'title', 'description', 'expires_at', 'is_anonymous'];
 
-    protected $casts = ['is_anonymous' => 'boolean'];
+    protected $casts = [
+        'is_anonymous' => 'boolean',
+        'expires_at' => 'datetime',
+    ];
+
+    protected $appends = ['is_expired'];
+
+    public function getIsExpiredAttribute(): bool
+    {
+        return $this->expires_at !== null && $this->expires_at->isPast();
+    }
 
     public function options()
     {
