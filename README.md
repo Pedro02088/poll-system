@@ -231,5 +231,18 @@ Todas as chaves estrangeiras usam `ON DELETE CASCADE`. O diagrama está em
 
 ## Screenshots
 
-> _(espaço reservado — adicionar prints das telas de login, lista, criação e
-> resultados em tempo real)_
+### Login
+Autenticação com a identidade visual do Enlace e recuperação de senha por e-mail.
+
+![Tela de login](docs/screenshots/login.png)
+
+### Enquetes
+Listagem com busca por título e ordenação por mais votadas.
+
+![Lista de enquetes](docs/screenshots/lista.png)
+
+### Resultados em tempo real
+Barras animadas via SSE, com destaque da opção líder, marcação do voto do
+usuário e indicador de atualização ao vivo.
+
+![Resultados em tempo real](docs/screenshots/resultados.png)
