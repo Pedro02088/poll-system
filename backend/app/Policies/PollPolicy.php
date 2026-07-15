@@ -9,58 +9,23 @@ use Illuminate\Auth\Access\Response;
 class PollPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * Só o criador edita a enquete.
+     *
+     * Retorna Response em vez de bool para que a mensagem do 403 seja a nossa,
+     * em português — o padrão do Laravel responderia "This action is unauthorized.".
      */
-    public function viewAny(User $user): bool
+    public function update(User $user, Poll $poll): Response
     {
-        return false;
+        return $user->id === $poll->user_id
+            ? Response::allow()
+            : Response::deny('Apenas quem criou a enquete pode editá-la.');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Poll $poll): bool
+    /** Só o criador exclui a enquete. */
+    public function delete(User $user, Poll $poll): Response
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Poll $poll): bool
-    {
-        return $user->id === $poll->user_id;
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Poll $poll): bool
-    {
-        return $user->id === $poll->user_id;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Poll $poll): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Poll $poll): bool
-    {
-        return false;
+        return $user->id === $poll->user_id
+            ? Response::allow()
+            : Response::deny('Apenas quem criou a enquete pode excluí-la.');
     }
 }
