@@ -20,13 +20,13 @@ export default function PollList() {
 
   return (
     <Layout>
-      <div className="flex justify-between items-center mb-6 gap-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-3 sm:gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 font-display">Enquetes</h1>
           <p className="text-slate-400 text-sm mt-0.5">Vote e acompanhe os resultados em tempo real</p>
         </div>
         <Link to="/polls/new"
-          className="btn-gradient flex items-center gap-1.5 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.97] transition-all duration-200 shrink-0">
+          className="btn-gradient flex items-center justify-center gap-1.5 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.97] transition-all duration-200 shrink-0">
           <Icon name="plus" className="w-4 h-4" /> Nova enquete
         </Link>
       </div>
@@ -41,8 +41,10 @@ export default function PollList() {
             className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-white transition-all duration-200 focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/10" />
         </div>
         <button onClick={() => setSortByVotes(!sortByVotes)}
-          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-semibold border transition-all duration-200 ${sortByVotes ? 'bg-brand text-white border-brand shadow-md shadow-blue-500/25' : 'bg-white text-slate-600 border-slate-200 hover:border-brand hover:text-brand'}`}>
-          <Icon name="fire" className="w-4 h-4" /> Mais votadas
+          title="Mais votadas"
+          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-semibold border shrink-0 transition-all duration-200 ${sortByVotes ? 'bg-brand text-white border-brand shadow-md shadow-blue-500/25' : 'bg-white text-slate-600 border-slate-200 hover:border-brand hover:text-brand'}`}>
+          <Icon name="fire" className="w-4 h-4" />
+          <span className="hidden sm:inline">Mais votadas</span>
         </button>
       </div>
 

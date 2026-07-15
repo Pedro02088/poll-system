@@ -2,7 +2,7 @@ export default function ResultBar({ text, votes, total, highlight, chosen }) {
   const pct = total > 0 ? Math.round((votes / total) * 100) : 0
   return (
     <div className="mb-4">
-      <div className="flex justify-between items-center text-sm mb-1.5 gap-2">
+      <div className="flex justify-between items-center text-sm mb-1.5 gap-2 flex-wrap">
         <span className={`font-medium flex items-center gap-2 min-w-0 ${highlight ? 'text-brand' : 'text-slate-700'}`}>
           <span className="truncate">{text}</span>
           {chosen && (
